@@ -8,7 +8,7 @@ const LINE_REPLY_API = "https://api.line.me/v2/bot/message/reply";
 function buildQuickReplyMenu() {
   return {
     type: "text",
-    text: " ", // 必須有 text，但給空白即可
+    text: "↓", // 必須有 text，但給空白即可
     quickReply: {
       items: [
         {

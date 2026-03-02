@@ -1,13 +1,6 @@
 /**
  * Vercel Serverless Function: /api/callback
  * LINE Messaging API Webhook endpoint
- *
- * Features:
- * - On follow: send welcome + Quick Reply buttons (message actions)
- * - On message: echo the user's text (you can replace this with GPT/Supabase logic)
- *
- * Required ENV:
- * - CHANNEL_ACCESS_TOKEN
  */
 
 const LINE_REPLY_API = "https://api.line.me/v2/bot/message/reply";
@@ -15,7 +8,7 @@ const LINE_REPLY_API = "https://api.line.me/v2/bot/message/reply";
 function buildQuickReplyWelcome() {
   return {
     type: "text",
-    text: "",
+    text: " ", // 一個空白即可（Quick Reply 需要 text）
     quickReply: {
       items: [
         {
@@ -42,7 +35,7 @@ function buildQuickReplyWelcome() {
 async function replyMessage(replyToken, messages) {
   const token = process.env.CHANNEL_ACCESS_TOKEN;
   if (!token) {
-    throw new Error("HQmkX5VZCD9LjRJC5+YlP7D7J6jFQ4Oz/xPbJG236mK91F/HxrLD67ltFdouN4xgus00hV1YAn4QQ5TBbOVDLEAnybANmfTJD9/Rrf1zkx/2IWq8B3pwENTX55n5w079/9SSBuyzBKtlx+WV5znLIgdB04t89/1O/w1cDnyilFU=");
+    throw new Error("Missing CHANNEL_ACCESS_TOKEN");
   }
 
   const body = {
@@ -59,49 +52,41 @@ async function replyMessage(replyToken, messages) {
     body: JSON.stringify(body)
   });
 
-  // LINE returns 200 even if it fails sometimes; still parse for debugging
-  const text = await res.text();
   if (!res.ok) {
-    throw new Error(`LINE reply failed: ${res.status} ${text}`);
+    const errorText = await res.text();
+    throw new Error(`LINE reply failed: ${res.status} ${errorText}`);
   }
-  return text;
 }
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    res.status(200).send("OK");
-    return;
+    return res.status(200).send("OK");
   }
 
   try {
-    const body = req.body || {};
-    const events = body.events || [];
+    const events = req.body?.events || [];
 
-    // LINE may send multiple events in one request
     for (const event of events) {
       const replyToken = event.replyToken;
-
       if (!replyToken) continue;
 
+      // 加好友時出現按鈕
       if (event.type === "follow") {
         await replyMessage(replyToken, buildQuickReplyWelcome());
         continue;
       }
 
+      // 任何文字訊息都重新顯示按鈕
       if (event.type === "message" && event.message?.type === "text") {
-        const userText = event.message.text || "";
-         // 不做任何回覆
-        });
+        await replyMessage(replyToken, buildQuickReplyWelcome());
         continue;
       }
-
-      // For other event types, keep silent or reply as needed
     }
 
     res.status(200).json({ ok: true });
+
   } catch (err) {
-    // Return 200 to LINE to avoid retries storm; log for Vercel
     console.error(err);
-    res.status(200).json({ ok: false, error: String(err?.message || err) });
+    res.status(200).json({ ok: false });
   }
 }

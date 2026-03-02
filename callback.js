@@ -15,7 +15,7 @@ const LINE_REPLY_API = "https://api.line.me/v2/bot/message/reply";
 function buildQuickReplyWelcome() {
   return {
     type: "text",
-    text: "歡迎加入官方LINE，請選擇服務：",
+    text: "",
     quickReply: {
       items: [
         {
@@ -90,9 +90,7 @@ export default async function handler(req, res) {
 
       if (event.type === "message" && event.message?.type === "text") {
         const userText = event.message.text || "";
-        await replyMessage(replyToken, {
-          type: "text",
-          text: `您選擇了：${userText}`
+         // 不做任何回覆
         });
         continue;
       }

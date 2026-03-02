@@ -5,10 +5,10 @@
 
 const LINE_REPLY_API = "https://api.line.me/v2/bot/message/reply";
 
-function buildQuickReplyMenu() {
+function buildQuickReplyWelcome() {
   return {
     type: "text",
-    text: " ", // 必須有 text，但給空白即可
+    text: " ", // 一個空白即可（Quick Reply 需要 text）
     quickReply: {
       items: [
         {
@@ -59,7 +59,6 @@ async function replyMessage(replyToken, messages) {
 }
 
 export default async function handler(req, res) {
-
   if (req.method !== "POST") {
     return res.status(200).send("OK");
   }
@@ -68,25 +67,26 @@ export default async function handler(req, res) {
     const events = req.body?.events || [];
 
     for (const event of events) {
-
       const replyToken = event.replyToken;
       if (!replyToken) continue;
 
-      // ✅ 只有加入好友時顯示按鈕
+      // 加好友時出現按鈕
       if (event.type === "follow") {
-        await replyMessage(replyToken, buildQuickReplyMenu());
+        await replyMessage(replyToken, buildQuickReplyWelcome());
         continue;
       }
 
-      // ❌ 不要自動回覆任何文字
-      // 使用者按按鈕時 LINE 會自己顯示該文字
-      // 這裡不做任何回應
+      // 任何文字訊息都重新顯示按鈕
+      if (event.type === "message" && event.message?.type === "text") {
+        await replyMessage(replyToken, buildQuickReplyWelcome());
+        continue;
+      }
     }
 
-    return res.status(200).json({ ok: true });
+    res.status(200).json({ ok: true });
 
   } catch (err) {
     console.error(err);
-    return res.status(200).json({ ok: false });
+    res.status(200).json({ ok: false });
   }
 }

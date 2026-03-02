@@ -1,0 +1,11 @@
+{
+  "name": "line_webhook_vercel_node_quickreply",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LINE Messaging API webhook on Vercel (Node.js) with Quick Reply buttons",
+  "main": "api/callback.js",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  }
+}

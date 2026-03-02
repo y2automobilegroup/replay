@@ -42,7 +42,7 @@ function buildQuickReplyWelcome() {
 async function replyMessage(replyToken, messages) {
   const token = process.env.CHANNEL_ACCESS_TOKEN;
   if (!token) {
-    throw new Error("Missing env CHANNEL_ACCESS_TOKEN");
+    throw new Error("HQmkX5VZCD9LjRJC5+YlP7D7J6jFQ4Oz/xPbJG236mK91F/HxrLD67ltFdouN4xgus00hV1YAn4QQ5TBbOVDLEAnybANmfTJD9/Rrf1zkx/2IWq8B3pwENTX55n5w079/9SSBuyzBKtlx+WV5znLIgdB04t89/1O/w1cDnyilFU=");
   }
 
   const body = {

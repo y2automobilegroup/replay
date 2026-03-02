@@ -15,7 +15,7 @@ const LINE_REPLY_API = "https://api.line.me/v2/bot/message/reply";
 function buildQuickReplyWelcome() {
   return {
     type: "text",
-    text: "",
+    text: " ",
     quickReply: {
       items: [
         {

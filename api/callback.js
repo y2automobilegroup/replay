@@ -1,21 +1,14 @@
 /**
  * Vercel Serverless Function: /api/callback
  * LINE Messaging API Webhook endpoint
- *
- * Features:
- * - On follow: send welcome + Quick Reply buttons (message actions)
- * - On message: echo the user's text (you can replace this with GPT/Supabase logic)
- *
- * Required ENV:
- * - CHANNEL_ACCESS_TOKEN
  */
 
 const LINE_REPLY_API = "https://api.line.me/v2/bot/message/reply";
 
-function buildQuickReplyWelcome() {
+function buildQuickReplyMenu() {
   return {
     type: "text",
-    text: "↓",
+    text: " ", // 必須有 text，但給空白即可
     quickReply: {
       items: [
         {
@@ -42,7 +35,7 @@ function buildQuickReplyWelcome() {
 async function replyMessage(replyToken, messages) {
   const token = process.env.CHANNEL_ACCESS_TOKEN;
   if (!token) {
-    throw new Error("Missing env CHANNEL_ACCESS_TOKEN");
+    throw new Error("Missing CHANNEL_ACCESS_TOKEN");
   }
 
   const body = {
@@ -54,48 +47,46 @@ async function replyMessage(replyToken, messages) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": Bearer ${token}
+      "Authorization": `Bearer ${token}`
     },
     body: JSON.stringify(body)
   });
 
-  // LINE returns 200 even if it fails sometimes; still parse for debugging
-  const text = await res.text();
   if (!res.ok) {
-    throw new Error(`LINE reply failed: ${res.status} ${text}`);
+    const errorText = await res.text();
+    throw new Error(`LINE reply failed: ${res.status} ${errorText}`);
   }
-  return text;
 }
 
 export default async function handler(req, res) {
+
   if (req.method !== "POST") {
-    res.status(200).send("OK");
-    return;
+    return res.status(200).send("OK");
   }
 
   try {
-    const body = req.body || {};
-    const events = body.events || [];
+    const events = req.body?.events || [];
 
-    // LINE may send multiple events in one request
     for (const event of events) {
-      const replyToken = event.replyToken;
 
+      const replyToken = event.replyToken;
       if (!replyToken) continue;
 
+      // ✅ 只有加入好友時顯示按鈕
       if (event.type === "follow") {
-        await replyMessage(replyToken, buildQuickReplyWelcome());
+        await replyMessage(replyToken, buildQuickReplyMenu());
         continue;
       }
 
-
-      // For other event types, keep silent or reply as needed
+      // ❌ 不要自動回覆任何文字
+      // 使用者按按鈕時 LINE 會自己顯示該文字
+      // 這裡不做任何回應
     }
 
-    res.status(200).json({ ok: true });
+    return res.status(200).json({ ok: true });
+
   } catch (err) {
-    // Return 200 to LINE to avoid retries storm; log for Vercel
     console.error(err);
-    res.status(200).json({ ok: false, error: String(err?.message || err) });
+    return res.status(200).json({ ok: false });
   }
 }

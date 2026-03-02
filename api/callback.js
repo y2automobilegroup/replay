@@ -7,8 +7,6 @@ const LINE_REPLY_API = "https://api.line.me/v2/bot/message/reply";
 
 function buildQuickReplyWelcome() {
   return {
-    type: "text",
-    text: " ", // 一個空白即可（Quick Reply 需要 text）
     quickReply: {
       items: [
         {

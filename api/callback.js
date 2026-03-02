@@ -8,7 +8,7 @@ const LINE_REPLY_API = "https://api.line.me/v2/bot/message/reply";
 function buildQuickReplyWelcome() {
   return {
     type: "text",
-    text: " ", // 必須有 text，給一個空白即可
+    text: " ", // 一個空白即可（Quick Reply 需要 text）
     quickReply: {
       items: [
         {
@@ -59,7 +59,6 @@ async function replyMessage(replyToken, messages) {
 }
 
 export default async function handler(req, res) {
-
   if (req.method !== "POST") {
     return res.status(200).send("OK");
   }
@@ -68,7 +67,6 @@ export default async function handler(req, res) {
     const events = req.body?.events || [];
 
     for (const event of events) {
-
       const replyToken = event.replyToken;
       if (!replyToken) continue;
 
@@ -85,10 +83,10 @@ export default async function handler(req, res) {
       }
     }
 
-    return res.status(200).json({ ok: true });
+    res.status(200).json({ ok: true });
 
   } catch (err) {
     console.error(err);
-    return res.status(200).json({ ok: false });
+    res.status(200).json({ ok: false });
   }
 }

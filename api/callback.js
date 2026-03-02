@@ -11,7 +11,7 @@ const LINE_REPLY_API = "https://api.line.me/v2/bot/message/reply";
 function buildQuickReplyWelcome() {
   return {
     type: "text",
-    text: "⠀", // 想完全不顯示可改成 " "
+  
     quickReply: {
       items: [
         { type: "action", action: { type: "message", label: "我要購車！", text: "我要購車" } },

@@ -2,9 +2,6 @@
  * Vercel Serverless Function: /api/callback
  * LINE Messaging API Webhook endpoint
  *
- * Features:
- * - On follow: fetch user's displayName then send welcome text + Quick Reply buttons
- *
  * Required ENV:
  * - CHANNEL_ACCESS_TOKEN
  */
@@ -12,7 +9,24 @@
 const LINE_REPLY_API = "https://api.line.me/v2/bot/message/reply";
 const LINE_PROFILE_API = "https://api.line.me/v2/bot/profile/";
 
-/** Build welcome message + Quick Reply (with displayName) */
+// 隱形字元（Braille blank），用來避免多一行字，但又不會被 LINE 當空訊息丟掉
+const INVISIBLE_TEXT = "⠀";
+
+function buildQuickReplyMenuOnly() {
+  return {
+    type: "text",
+    text: INVISIBLE_TEXT,
+    quickReply: {
+      items: [
+        { type: "action", action: { type: "message", label: "我要購車！", text: "我要購車" } },
+        { type: "action", action: { type: "message", label: "愛車估價？", text: "我要估價" } },
+        { type: "action", action: { type: "message", label: "想了解皮卡系列？", text: "我想了解皮卡系列" } },
+        { type: "action", action: { type: "message", label: "專人服務！", text: "我要專人服務" } }
+      ]
+    }
+  };
+}
+
 function buildWelcomeWithQuickReply(displayName = "您好") {
   return {
     type: "text",
@@ -41,7 +55,6 @@ function buildWelcomeWithQuickReply(displayName = "您好") {
   };
 }
 
-/** Reply message helper */
 async function replyMessage(replyToken, messages) {
   const token = process.env.CHANNEL_ACCESS_TOKEN;
   if (!token) throw new Error("Missing env CHANNEL_ACCESS_TOKEN");
@@ -66,7 +79,6 @@ async function replyMessage(replyToken, messages) {
   }
 }
 
-/** Fetch LINE user's displayName by userId */
 async function getDisplayName(userId) {
   const token = process.env.CHANNEL_ACCESS_TOKEN;
   if (!token) throw new Error("Missing env CHANNEL_ACCESS_TOKEN");
@@ -95,22 +107,26 @@ export default async function handler(req, res) {
       const replyToken = event.replyToken;
       if (!replyToken) continue;
 
-      // ✅ Only handle "follow" (new friend)
+      // 1) 加好友：送歡迎＋按鈕
       if (event.type === "follow") {
         const userId = event?.source?.userId;
         const displayName = (await getDisplayName(userId)) || "您好";
-
         await replyMessage(replyToken, buildWelcomeWithQuickReply(displayName));
         continue;
       }
 
-      // ✅ Other events: keep silent (no echo / no extra replies)
+      // 2) 只要使用者送出文字（包含按鈕送出的文字），就再送一次「只有按鈕」
+      if (event.type === "message" && event.message?.type === "text") {
+        await replyMessage(replyToken, buildQuickReplyMenuOnly());
+        continue;
+      }
+
+      // 其他事件不回覆
     }
 
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error(err);
-    // Return 200 to avoid LINE retry storm
     return res.status(200).json({ ok: false, error: String(err?.message || err) });
   }
 }

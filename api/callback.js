@@ -8,7 +8,20 @@ const LINE_REPLY_API = "https://api.line.me/v2/bot/message/reply";
 function buildQuickReplyMenu() {
   return {
     type: "text",
-    text: "↓", // 必須有 text，但給空白即可
+    text: "{Nickname} 感謝您選擇亞鈺
+我們「以極具溫度的服務，提供車種多元、車況透明且保固完善的購車體驗」 
+
+📢 為什麼選擇亞鈺？ 
+✅ 全台唯一購車五日鑑賞期，無理由包退換 
+✅ 40多年專業經驗，成交上萬位車主，累積信任好評 
+✅ 獨創保固系統，全台150間保修廠，AI智能線上回覆 
+✅ 四大營業據點，專業團隊隨時為您服務 
+
+🔹 亞鈺汽車最新車款： 
+點擊觀看👉  https://reurl.cc/MMYKg3
+
+誠摯邀請您使用下方按鈕及選單 或是 直接傳送訊息
+專人將立即為您服務 🤝", // 必須有 text，但給空白即可
     quickReply: {
       items: [
         {

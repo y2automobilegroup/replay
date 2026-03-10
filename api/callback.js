@@ -34,7 +34,6 @@ function buildWelcomeWithQuickReply(displayName = "您好") {
       items: [
         { type: "action", action: { type: "message", label: "我要購車！", text: "我要購車" } },
         { type: "action", action: { type: "message", label: "愛車估價？", text: "我要估價" } },
-        { type: "action", action: { type: "message", label: "想了解皮卡系列？", text: "我想了解皮卡系列" } },
         { type: "action", action: { type: "message", label: "專人服務！", text: "我要專人服務" } }
       ]
     }
